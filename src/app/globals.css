@@ -1,0 +1,213 @@
+@import "../design-system/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  :root {
+    /* Inter — non-Arabic UI; Cairo overrides when lang=ar */
+    --font-ui: var(--font-inter);
+    --font-ui-display: var(--font-inter);
+    --font-ui-serif: var(--font-playfair);
+    --font-body: var(--font-inter);
+    --font-mono-system: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  }
+
+  /* Arabic: Cairo for every UI face (sans, display, body). */
+  :root:lang(ar),
+  html[lang="ar"] {
+    --font-ui: var(--font-cairo);
+    --font-ui-display: var(--font-cairo);
+    --font-ui-serif: var(--font-cairo);
+    --font-body: var(--font-cairo);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-ui-display), system-ui, sans-serif;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono-system);
+  }
+}
+
+/* Ensure Tailwind font utilities also resolve to Cairo in Arabic */
+html[lang="ar"],
+html[lang="ar"] body,
+html[lang="ar"] .font-sans,
+html[lang="ar"] .font-display,
+html[lang="ar"] .font-serif,
+html[lang="ar"] .font-arabic {
+  font-family: var(--font-cairo), system-ui, sans-serif !important;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .sidebar {
+  right: 0;
+  left: auto;
+}
+
+/* RTL Sidebar positioning */
+[dir="rtl"] [data-side="right"] {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] [data-side="left"] {
+  left: 0;
+  right: auto;
+}
+
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+[dir="rtl"] .pl-4 {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+[dir="rtl"] .pr-4 {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
+[dir="rtl"] .pl-6 {
+  padding-left: 0;
+  padding-right: 1.5rem;
+}
+
+[dir="rtl"] .pr-6 {
+  padding-right: 0;
+  padding-left: 1.5rem;
+}
+
+[dir="rtl"] .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+[dir="rtl"] .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+[dir="rtl"] .ml-4 {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+[dir="rtl"] .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+/* RTL-specific spacing adjustments */
+[dir="rtl"] .space-x-2 > * + * {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+[dir="rtl"] .space-x-4 > * + * {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+[dir="rtl"] .space-x-6 > * + * {
+  margin-left: 0;
+  margin-right: 1.5rem;
+}
+
+/* RTL text alignment for legacy physical utilities */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Bouncing-dots loader — primary color follows the theme token */
+.loader {
+  --color-1: hsl(var(--primary));
+  --size: 1px;
+
+  width: calc(16 * var(--size));
+  height: calc(16 * var(--size));
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  background: var(--color-1);
+  box-sizing: border-box;
+  animation: loader-bounce 0.6s -0.32s ease-in-out infinite alternate;
+}
+
+.loader::before,
+.loader::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: calc(16 * var(--size));
+  height: calc(16 * var(--size));
+  border-radius: 50%;
+  background: var(--color-1);
+  box-sizing: border-box;
+}
+
+.loader::before {
+  left: calc(-24 * var(--size));
+  animation: loader-bounce 0.6s -0.48s ease-in-out infinite alternate;
+}
+
+.loader::after {
+  left: calc(24 * var(--size));
+  animation: loader-bounce 0.6s -0.16s ease-in-out infinite alternate;
+}
+
+@keyframes loader-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(calc(-16 * var(--size)));
+  }
+}
+
+/* Hide Vercel Toolbar floating circle */
+vercel-live-feedback,
+#vercel-live-feedback,
+[data-vercel-toolbar],
+iframe[src*="vercel.live"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

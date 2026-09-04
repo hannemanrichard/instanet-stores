@@ -1,0 +1,146 @@
+/**
+ * Design tokens — shadcnblocks structure + Grab color scheme
+ * ----------------------------------------
+ * Grab green: primary #00B14F, deep #008C3A, accent wash #E6F8EF.
+ * Neutrals stay clean white/gray. Prefer semantic tokens in UI code.
+ */
+
+:root {
+  /* ——— Color (shadcn semantic) ——— */
+  --background: 120 7% 97%; /* #F7F8F7 */
+  --foreground: 0 0% 4%; /* #0a0a0a */
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 4%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 4%;
+
+  /* Grab Green (#00B14F) */
+  --primary: 147 100% 35%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 96%; /* #f5f5f5 */
+  --secondary-foreground: 0 0% 9%;
+
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%; /* #737373 */
+
+  /* Soft Grab wash (#E6F8EF) */
+  --accent: 150 56% 94%;
+  --accent-foreground: 145 100% 21%; /* #006B2D */
+
+  --destructive: 357 100% 45%; /* #e7000b */
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 90%; /* #e5e5e5 */
+  --input: 0 0% 90%;
+  --ring: 147 100% 35%; /* #00B14F */
+
+  --brand: 147 100% 35%;
+  --brand-foreground: 0 0% 100%;
+
+  --success: 147 100% 35%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 9%;
+
+  /* Base radius 8px (unchanged) */
+  --radius: 0.5rem;
+
+  /* Charts: Grab green scale */
+  --chart-1: 147 100% 35%; /* #00B14F */
+  --chart-2: 145 100% 27%; /* #008C3A */
+  --chart-3: 145 100% 21%; /* #006B2D */
+  --chart-4: 148 56% 55%;
+  --chart-5: 150 40% 40%;
+
+  /* ——— Sidebar ——— */
+  --sidebar-background: 0 0% 98%; /* #fafafa */
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 0 0% 4%;
+  --sidebar-primary: 147 100% 35%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 150 56% 94%; /* #E6F8EF */
+  --sidebar-accent-foreground: 145 100% 21%; /* #006B2D */
+  --sidebar-border: 0 0% 90%;
+  --sidebar-ring: 147 100% 35%;
+  --sidebar-width: 16rem;
+  --sidebar-width-icon: 3.25rem;
+
+  /* ——— Layout / surfaces ——— */
+  --header-height: 3.5rem;
+  --dashboard: 120 7% 97%; /* #F7F8F7 */
+  --dashboard-foreground: 0 0% 4%;
+  --auth: 120 7% 97%; /* #F7F8F7 */
+  --auth-foreground: 0 0% 4%;
+  --storefront-bar: 147 100% 35%;
+  --storefront-bar-foreground: 0 0% 100%;
+  --storefront-border: 0 0% 90%;
+  --storefront-accent: 147 100% 35%;
+  --storefront-accent-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 150 20% 7%;
+  --foreground: 0 0% 98%;
+
+  --card: 150 15% 10%;
+  --card-foreground: 0 0% 98%;
+
+  --popover: 150 15% 10%;
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 147 90% 42%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 63%;
+
+  --accent: 145 40% 16%;
+  --accent-foreground: 150 56% 90%;
+
+  --destructive: 357 100% 45%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 147 90% 42%;
+
+  --brand: 147 90% 42%;
+  --brand-foreground: 0 0% 100%;
+
+  --success: 147 90% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 9%;
+
+  --chart-1: 147 90% 42%;
+  --chart-2: 148 56% 55%;
+  --chart-3: 145 100% 35%;
+  --chart-4: 150 40% 50%;
+  --chart-5: 145 100% 27%;
+
+  --sidebar-background: 150 20% 7%;
+  --sidebar: 150 20% 7%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 147 90% 42%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 145 40% 16%;
+  --sidebar-accent-foreground: 150 56% 90%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-ring: 147 90% 42%;
+
+  --dashboard: 150 20% 7%;
+  --dashboard-foreground: 0 0% 98%;
+  --auth: 150 20% 7%;
+  --auth-foreground: 0 0% 98%;
+  --storefront-bar: 147 90% 42%;
+  --storefront-bar-foreground: 0 0% 100%;
+  --storefront-border: 0 0% 18%;
+  --storefront-accent: 147 90% 42%;
+  --storefront-accent-foreground: 0 0% 100%;
+}
