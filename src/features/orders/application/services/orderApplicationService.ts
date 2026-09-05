@@ -34,6 +34,23 @@ export interface UpdateOrderPayload {
   items?: UpdateOrderItemInput[];
 }
 
+const resolveTrustedProductPrice = (
+  quantity: number,
+  retailPrice: number,
+  retailPrice2?: number | null,
+  retailPrice3?: number | null
+): number => {
+  if (quantity >= 3) {
+    return retailPrice3 ?? retailPrice2 ?? retailPrice;
+  }
+
+  if (quantity === 2) {
+    return retailPrice2 ?? retailPrice;
+  }
+
+  return retailPrice;
+};
+
 export class OrderApplicationService {
   constructor(
     private readonly orderRepository: OrderRepository,
@@ -154,17 +171,34 @@ export class OrderApplicationService {
           "ORDER_SUPPLIER_PRICE_REQUIRED"
         );
       }
+      if (product.retail_price == null || product.retail_price < 0) {
+        throw new OrderError(
+          "Product retail_price is required",
+          "ORDER_RETAIL_PRICE_REQUIRED"
+        );
+      }
+
+      const productQty = Math.max(1, payload.order.product_qty || 1);
+      const trustedProductPrice = resolveTrustedProductPrice(
+        productQty,
+        product.retail_price,
+        product.retail_price_2,
+        product.retail_price_3
+      );
 
       const orderInput: CreateOrderInput = {
         ...payload.order,
         store_id: product.store_id,
-        status: payload.order.status ?? "initial",
+        status: "initial",
         is_auto_delivered: payload.order.is_auto_delivered ?? false,
         is_exchange_required: payload.order.is_exchange_required ?? false,
         has_defect: payload.order.has_defect ?? false,
         return_processed: payload.order.return_processed ?? false,
-        is_supplier_paid: payload.order.is_supplier_paid ?? false,
+        is_supplier_paid: false,
         product: payload.order.product ?? product.name,
+        product_qty: productQty,
+        product_price: trustedProductPrice,
+        shipping_price: payload.order.is_free_shipping ? 0 : undefined,
       };
 
       const order = await this.orderRepository.create(orderInput);
@@ -175,9 +209,10 @@ export class OrderApplicationService {
         items = await this.orderItemRepository.createMany(
           order.id,
           payload.items.map((item) => ({
-            ...item,
+            item_id: item.item_id,
+            qty: item.qty,
             unit_supplier_price:
-              item.unit_supplier_price ?? unitSupplierPrice,
+              unitSupplierPrice,
           }))
         );
       }

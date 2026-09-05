@@ -15,14 +15,12 @@ export type SettingKey =
   | "facebook_pixel_id"
   | "tiktok_pixel_id"
   | "google_analytics_id"
-  | "microsoft_clarity_id"
-  | "meta_conversion_api_access_token";
+  | "microsoft_clarity_id";
 
 export interface SettingsMap {
   facebook_pixel_id?: string | null;
   tiktok_pixel_id?: string | null;
   google_analytics_id?: string | null;
   microsoft_clarity_id?: string | null;
-  meta_conversion_api_access_token?: string | null;
 }
 

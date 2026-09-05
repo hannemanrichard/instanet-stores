@@ -1,5 +1,6 @@
 import "server-only";
 import { supabaseServer as supabase } from "@/infrastructure/supabase/server";
+import { AUDIT_LOG_SOURCE } from "@/shared/server/auditSource";
 import { errorHandlers } from "@/shared/utils/errorHandler";
 import logger from "@/shared/utils/logger";
 import { getAuditLogField } from "./idUtils";
@@ -11,6 +12,7 @@ export interface AuditEntry {
   old_values?: Record<string, any>;
   new_values?: Record<string, any>;
   changed_by?: number;
+  source?: string;
 }
 
 export class AuditLogger {
@@ -25,6 +27,7 @@ export class AuditLogger {
         old_values: entry.old_values ? JSON.stringify(entry.old_values) : null,
         new_values: entry.new_values ? JSON.stringify(entry.new_values) : null,
         changed_by: entry.changed_by,
+        source: entry.source ?? AUDIT_LOG_SOURCE,
       };
 
       // Use record_id for numbers, record_uuid for strings

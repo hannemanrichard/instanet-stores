@@ -15,7 +15,6 @@ const MAP_SETTING_KEYS = [
   "tiktok_pixel_id",
   "google_analytics_id",
   "microsoft_clarity_id",
-  "meta_conversion_api_access_token",
 ] as const;
 
 type Tables = Database["public"]["Tables"];
@@ -194,9 +193,6 @@ export class SupabaseSettingsService implements SettingsRepository {
               break;
             case "microsoft_clarity_id":
               map.microsoft_clarity_id = row.value;
-              break;
-            case "meta_conversion_api_access_token":
-              map.meta_conversion_api_access_token = row.value;
               break;
           }
         }

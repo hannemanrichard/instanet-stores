@@ -1,4 +1,5 @@
 import logger from "@/shared/utils/logger";
+import { AUDIT_LOG_SOURCE } from "@/shared/server/auditSource";
 import { AuditLogger } from "./auditLogger";
 
 export interface QueryOptions {
@@ -196,6 +197,7 @@ export class DatabaseWrapper {
       old_values: auditLog.oldValues,
       new_values: auditLog.newValues || (data as Record<string, any>),
       changed_by: auditLog.changedBy,
+      source: AUDIT_LOG_SOURCE,
     });
   }
 

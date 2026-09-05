@@ -102,6 +102,11 @@ export class LeadApplicationService {
         }
       }
 
+      leadData.status = "new";
+      leadData.partner_id = undefined;
+      leadData.price = undefined;
+      leadData.is_wholesale = leadData.is_wholesale ?? false;
+
       // Auto-assign tracker if not provided
       // Note: tracker_id is not in LeadEntity yet, but we'll prepare for it
       // For now, we'll fetch trackers but not assign until tracker_id is added to the schema

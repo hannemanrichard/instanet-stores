@@ -901,15 +901,13 @@
         "facebook_pixel_id": "Facebook Pixel ID",
         "tiktok_pixel_id": "TikTok Pixel ID(s)",
         "google_analytics_id": "Google Analytics ID",
-        "microsoft_clarity_id": "Microsoft Clarity ID",
-        "meta_conversion_api_access_token": "Meta Conversion API Access Token"
+        "microsoft_clarity_id": "Microsoft Clarity ID"
       },
       "placeholders": {
         "facebook_pixel_id": "Enter your Facebook Pixel ID",
         "tiktok_pixel_id": "One or more IDs, comma-separated (e.g. ABC123, DEF456)",
         "google_analytics_id": "Enter your Google Analytics ID (GA4)",
-        "microsoft_clarity_id": "Enter your Microsoft Clarity Project ID",
-        "meta_conversion_api_access_token": "Enter your Meta Conversion API access token"
+        "microsoft_clarity_id": "Enter your Microsoft Clarity Project ID"
       }
     },
     "productPages": {

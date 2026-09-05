@@ -207,7 +207,15 @@ describe("OrderApplicationService", () => {
 
       const result = await service.createOrder(payload);
 
-      expect(orderRepository.create).toHaveBeenCalled();
+      expect(orderRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          store_id: 7,
+          status: "initial",
+          is_supplier_paid: false,
+          product: "Serum",
+          product_price: 5000,
+        })
+      );
       expect(orderItemRepository.createMany).toHaveBeenCalledWith(1, [
         {
           item_id: 10,
@@ -218,6 +226,63 @@ describe("OrderApplicationService", () => {
       expect(productRepository.getById).toHaveBeenCalledWith(10);
       expect(result.order.id).toBe(1);
       expect(result.items).toHaveLength(1);
+    });
+
+    it("ignores client monetary and workflow fields in favor of trusted product values", async () => {
+      const payload: CreateOrderPayload = {
+        order: {
+          ...baseOrder,
+          id: undefined as unknown as number,
+          status: "delivered",
+          product_price: 1,
+          shipping_price: 1,
+          is_supplier_paid: true,
+          product_qty: 3,
+        } as CreateOrderInput,
+        items: [
+          {
+            item_id: 10,
+            qty: 3,
+            unit_supplier_price: 1,
+          },
+        ],
+        productId: 10,
+      };
+
+      orderRepository.create.mockResolvedValue(baseOrder);
+      orderItemRepository.createMany.mockResolvedValue([
+        {
+          order_id: 1,
+          item_id: 10,
+          qty: 3,
+          unit_supplier_price: 100,
+          item: undefined,
+        },
+      ]);
+      productRepository.getById.mockResolvedValue({
+        ...product,
+        retail_price_2: 4500,
+        retail_price_3: 4000,
+      });
+
+      await service.createOrder(payload);
+
+      expect(orderRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "initial",
+          is_supplier_paid: false,
+          product_price: 4000,
+          product_qty: 3,
+          shipping_price: undefined,
+        })
+      );
+      expect(orderItemRepository.createMany).toHaveBeenCalledWith(1, [
+        {
+          item_id: 10,
+          qty: 3,
+          unit_supplier_price: 100,
+        },
+      ]);
     });
 
     it("rejects create without product id", async () => {

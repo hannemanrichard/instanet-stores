@@ -2,25 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { orderApplicationService } from "@/features/orders/application/services/orderApplicationService";
 import type { CreateOrderPayload } from "@/features/orders/application/services/orderApplicationService";
 import type { CreateOrderInput } from "@/features/orders/domain";
+import {
+  adminCreateOrderBodySchema,
+  orderListSearchParamsSchema,
+} from "@/features/orders/domain/validations";
 import { requireDashboardActor } from "@/shared/server/requireDashboardActor";
 import { resolveScopeStoreIds } from "@/shared/server/storeAccess";
 import { jsonError } from "@/shared/server/jsonError";
+import { parseJsonBody, parseSearchParams } from "@/shared/server/parseRequest";
 import { UnauthorizedError } from "@/shared/server/requireCurrentStore";
 
 export async function GET(req: NextRequest) {
   try {
     const actor = await requireDashboardActor();
-    const { searchParams } = req.nextUrl;
-
-    const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1);
-    const limit = Math.max(
-      1,
-      Math.min(100, Number(searchParams.get("limit") ?? "10") || 10)
+    const parsed = parseSearchParams(
+      req.nextUrl.searchParams,
+      orderListSearchParamsSchema
     );
-    const status = searchParams.get("status")?.trim() || undefined;
-    const search = searchParams.get("search")?.trim() || undefined;
-    const storeIdParam = searchParams.get("storeId");
-    const requestedStoreId = storeIdParam ? Number(storeIdParam) : null;
+    const page = parsed.page ?? 1;
+    const limit = parsed.limit ?? 10;
+    const status = parsed.status;
+    const search = parsed.search;
+    const requestedStoreId = parsed.storeId ?? null;
     const storeIds = resolveScopeStoreIds(actor, requestedStoreId);
 
     const result = await orderApplicationService.getPaginatedOrders(
@@ -45,29 +48,8 @@ export async function POST(req: NextRequest) {
       throw new UnauthorizedError("Admin access required to create orders");
     }
 
-    const body = (await req.json()) as {
-      order?: Partial<CreateOrderInput>;
-      items?: CreateOrderPayload["items"];
-      productId?: number;
-    };
-
-    if (!body.order) {
-      return NextResponse.json(
-        { error: "Order payload is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.productId) {
-      return NextResponse.json(
-        { error: "productId is required" },
-        { status: 400 }
-      );
-    }
-
+    const body = await parseJsonBody(req, adminCreateOrderBodySchema);
     const orderFields = { ...body.order };
-    delete orderFields.store_id;
-    delete orderFields.is_supplier_paid;
 
     const payload: CreateOrderPayload = {
       order: {

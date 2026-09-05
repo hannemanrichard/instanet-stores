@@ -4,9 +4,20 @@ import { DatabaseWrapper } from "@/shared/utils/databaseWrapper";
 import { withPerformanceTracking } from "@/shared/utils/performanceMonitor";
 import type { StoreEntity, UpsertStoreInput } from "../domain";
 import type { StoreRepository } from "../domain/repositories";
+import {
+  clearInflightStoreByEmail,
+  getCachedStoreByEmail,
+  getInflightStoreByEmail,
+  invalidateCachedStoreByEmail,
+  setCachedStoreByEmail,
+  setInflightStoreByEmail,
+} from "./storeCache";
 
 type Tables = Database["public"]["Tables"];
 type StoreRow = Tables["stores"]["Row"];
+
+const normalizeComparable = (value: string | null | undefined) =>
+  (value ?? "").trim();
 
 export class SupabaseStoreService implements StoreRepository {
   private readonly tableName = "stores";
@@ -16,25 +27,47 @@ export class SupabaseStoreService implements StoreRepository {
       const normalized = email.trim().toLowerCase();
       if (!normalized) return null;
 
-      const row = await DatabaseWrapper.executeQuery(
-        async () => {
-          const { data, error } = await supabase
-            .from(this.tableName)
-            .select("*")
-            .ilike("email", normalized)
-            .maybeSingle();
+      const cached = getCachedStoreByEmail(normalized);
+      if (cached !== undefined) {
+        return cached;
+      }
 
-          if (error) throw error;
-          return { data, error };
-        },
-        {
-          operation: "getByEmail",
-          table: this.tableName,
-          metadata: { email: normalized },
-        }
-      );
+      const inflight = getInflightStoreByEmail(normalized);
+      if (inflight) {
+        return inflight;
+      }
 
-      return row ? this.mapRowToEntity(row) : null;
+      const loadStore = (async () => {
+        const row = await DatabaseWrapper.executeQuery(
+          async () => {
+            const { data, error } = await supabase
+              .from(this.tableName)
+              .select("*")
+              .ilike("email", normalized)
+              .maybeSingle();
+
+            if (error) throw error;
+            return { data, error };
+          },
+          {
+            operation: "getByEmail",
+            table: this.tableName,
+            metadata: { email: normalized },
+          }
+        );
+
+        const store = row ? this.mapRowToEntity(row) : null;
+        setCachedStoreByEmail(normalized, store);
+        return store;
+      })();
+
+      setInflightStoreByEmail(normalized, loadStore);
+
+      try {
+        return await loadStore;
+      } finally {
+        clearInflightStoreByEmail(normalized);
+      }
     });
   }
 
@@ -120,14 +153,31 @@ export class SupabaseStoreService implements StoreRepository {
         const existing = await this.getByEmail(email);
 
         if (existing) {
+          const nextFullname = data.fullname ?? existing.fullname ?? null;
+          const nextUsername = data.username ?? existing.username ?? null;
+          const nextAvatar = data.avatar ?? existing.avatar ?? null;
+
+          const isUnchanged =
+            normalizeComparable(existing.fullname) ===
+              normalizeComparable(nextFullname) &&
+            normalizeComparable(existing.username) ===
+              normalizeComparable(nextUsername) &&
+            normalizeComparable(existing.avatar) ===
+              normalizeComparable(nextAvatar);
+
+          if (isUnchanged) {
+            setCachedStoreByEmail(email, existing);
+            return existing;
+          }
+
           const row = await DatabaseWrapper.executeMutation(
             async () => {
               const { data: updated, error } = await supabase
                 .from(this.tableName)
                 .update({
-                  fullname: data.fullname ?? existing.fullname ?? null,
-                  username: data.username ?? existing.username ?? null,
-                  avatar: data.avatar ?? existing.avatar ?? null,
+                  fullname: nextFullname,
+                  username: nextUsername,
+                  avatar: nextAvatar,
                 })
                 .eq("id", existing.id)
                 .select()
@@ -148,7 +198,9 @@ export class SupabaseStoreService implements StoreRepository {
             }
           );
 
-          return this.mapRowToEntity(row);
+          const updated = this.mapRowToEntity(row);
+          setCachedStoreByEmail(email, updated);
+          return updated;
         }
 
         const row = await DatabaseWrapper.executeMutation(
@@ -179,7 +231,9 @@ export class SupabaseStoreService implements StoreRepository {
           }
         );
 
-        return this.mapRowToEntity(row);
+        const created = this.mapRowToEntity(row);
+        setCachedStoreByEmail(email, created);
+        return created;
       }
     );
   }
@@ -210,6 +264,7 @@ export class SupabaseStoreService implements StoreRepository {
         }
       );
 
+      invalidateCachedStoreByEmail((row.email ?? "").trim().toLowerCase());
       return this.mapRowToEntity(row);
     });
   }

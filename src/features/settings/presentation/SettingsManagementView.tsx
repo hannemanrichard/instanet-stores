@@ -16,7 +16,6 @@ const SETTING_KEYS: SettingKey[] = [
   "tiktok_pixel_id",
   "google_analytics_id",
   "microsoft_clarity_id",
-  "meta_conversion_api_access_token",
 ];
 
 const isSettingKey = (key: string): key is SettingKey =>
@@ -103,7 +102,7 @@ export const SettingsManagementView = () => {
                     <Label htmlFor={setting.key}>{label}</Label>
                     <Input
                       id={setting.key}
-                      type={setting.key === "meta_conversion_api_access_token" ? "password" : "text"}
+                      type="text"
                       value={currentValue}
                       onChange={(e) => handleChange(setting.key, e.target.value)}
                       placeholder={t(`placeholders.${key}`)}

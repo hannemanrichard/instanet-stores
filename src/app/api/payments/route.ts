@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { paymentsApplicationService } from "@/features/payments/application/services/paymentsApplicationService";
+import { createPaymentBodySchema } from "@/features/payments/domain/validations";
 import {
   requireDashboardActor,
   requireStoreOpsActor,
 } from "@/shared/server/requireDashboardActor";
 import { assertStoreAccess, resolveScopeStoreIds } from "@/shared/server/storeAccess";
 import { jsonError } from "@/shared/server/jsonError";
-import { PaymentsError } from "@/features/payments/domain";
+import { parseJsonBody } from "@/shared/server/parseRequest";
+import { rateLimitByActor } from "@/shared/server/rateLimit";
+
+const AUTHENTICATED_PAYMENT_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const AUTHENTICATED_PAYMENT_RATE_LIMIT_MAX = 20;
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,18 +30,26 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const actor = await requireStoreOpsActor();
-    const body = (await req.json()) as {
-      store_id?: number;
-      order_ids?: number[];
-      note?: string;
-    };
+    const limit = rateLimitByActor(
+      actor.user.id,
+      "payment-create",
+      AUTHENTICATED_PAYMENT_RATE_LIMIT_MAX,
+      AUTHENTICATED_PAYMENT_RATE_LIMIT_WINDOW_MS
+    );
 
-    if (!body.store_id || !body.order_ids?.length) {
-      throw new PaymentsError(
-        "store_id and order_ids are required",
-        "PAYMENTS_ORDERS_REQUIRED"
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests", code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(limit.retryAfterSeconds),
+          },
+        }
       );
     }
+
+    const body = await parseJsonBody(req, createPaymentBodySchema);
 
     assertStoreAccess(actor, body.store_id);
 
@@ -46,7 +59,15 @@ export async function POST(req: NextRequest) {
       note: body.note,
     });
 
-    return NextResponse.json({ payment }, { status: 201 });
+    return NextResponse.json(
+      { payment },
+      {
+        status: 201,
+        headers: {
+          "X-RateLimit-Remaining": String(limit.remaining),
+        },
+      }
+    );
   } catch (error) {
     return jsonError(error);
   }

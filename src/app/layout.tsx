@@ -5,9 +5,6 @@ import { ConditionalClerkProvider } from "@/shared/components/providers/Conditio
 import { ReactQueryProvider } from "@/shared/lib/providers/react-query";
 import { I18nProvider } from "@/shared/lib/providers/i18n-provider";
 import { Toaster } from "@/shared/components/ui/toaster";
-import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
-import { extractRouterConfig } from "uploadthing/server";
-import { ourFileRouter } from "./api/uploadthing/core";
 import { PixelScripts } from "@/shared/components/PixelScripts";
 import { BRAND_LOGO_SRC, BRAND_NAME } from "@/shared/lib/brand";
 import { Cairo, IBM_Plex_Mono, Inter, Playfair_Display } from "next/font/google";
@@ -79,9 +76,6 @@ export default function RootLayout({
           >
             <I18nProvider>
               <ReactQueryProvider>
-                <NextSSRPlugin
-                  routerConfig={extractRouterConfig(ourFileRouter)}
-                />
                 <PixelScripts />
                 {children}
               </ReactQueryProvider>

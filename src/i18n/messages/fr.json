@@ -785,15 +785,13 @@
         "facebook_pixel_id": "ID Facebook Pixel",
         "tiktok_pixel_id": "ID TikTok Pixel",
         "google_analytics_id": "ID Google Analytics",
-        "microsoft_clarity_id": "ID Microsoft Clarity",
-        "meta_conversion_api_access_token": "Jeton d'accès Meta Conversion API"
+        "microsoft_clarity_id": "ID Microsoft Clarity"
       },
       "placeholders": {
         "facebook_pixel_id": "Entrez votre ID Facebook Pixel",
         "tiktok_pixel_id": "Un ou plusieurs IDs, séparés par des virgules (ex. ABC123, DEF456)",
         "google_analytics_id": "Entrez votre ID Google Analytics (GA4)",
-        "microsoft_clarity_id": "Entrez votre ID de projet Microsoft Clarity",
-        "meta_conversion_api_access_token": "Entrez votre jeton d'accès Meta Conversion API"
+        "microsoft_clarity_id": "Entrez votre ID de projet Microsoft Clarity"
       }
     },
     "productPages": {

@@ -229,5 +229,63 @@ describe("SupabaseOrderService", () => {
       });
     });
   });
+
+  describe("getDailyMetrics", () => {
+    it("calculates sales from linked product supplier_price values", async () => {
+      mockDatabaseWrapper.executeQuery
+        .mockResolvedValueOnce([
+          { id: 11, created_at: "2026-09-04T10:00:00.000Z" },
+          { id: 12, created_at: "2026-09-04T11:00:00.000Z" },
+        ] as any)
+        .mockResolvedValueOnce([
+          {
+            order_id: 11,
+            qty: 2,
+            items: {
+              product_id: 21,
+              products: {
+                supplier_price: 300,
+              },
+            },
+          },
+          {
+            order_id: 12,
+            qty: 1,
+            items: {
+              product_id: 22,
+              products: {
+                supplier_price: 150,
+              },
+            },
+          },
+        ] as any);
+
+      const result = await service.getDailyMetrics("2026-09-04", "2026-09-04", 3);
+
+      expect(result).toEqual([
+        {
+          date: "2026-09-04",
+          sales: 750,
+          orders: 2,
+        },
+      ]);
+      expect(mockDatabaseWrapper.executeQuery).toHaveBeenNthCalledWith(
+        1,
+        expect.any(Function),
+        expect.objectContaining({
+          operation: "getDailyMetrics",
+          table: "orders",
+        })
+      );
+      expect(mockDatabaseWrapper.executeQuery).toHaveBeenNthCalledWith(
+        2,
+        expect.any(Function),
+        expect.objectContaining({
+          operation: "getDailyMetricsItems",
+          table: "order_item",
+        })
+      );
+    });
+  });
 });
 

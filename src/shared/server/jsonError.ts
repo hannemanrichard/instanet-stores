@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { StoreError } from "@/features/stores/domain";
 import { OrderError, OrderItemError } from "@/features/orders/domain";
 import { ReturnsError } from "@/features/returns/domain";
@@ -12,6 +13,7 @@ import {
 import { LeadError, LeadHopError, LeadItemError } from "@/features/leads/domain";
 import { UnauthorizedError } from "./requireCurrentStore";
 import { ForbiddenError } from "./storeAccess";
+import { ValidationError } from "./parseRequest";
 
 type CodedError = Error & { code: string };
 
@@ -30,6 +32,28 @@ const isCodedDomainError = (error: unknown): error is CodedError =>
   error instanceof LeadHopError;
 
 export const jsonError = (error: unknown, fallbackStatus = 500) => {
+  if (error instanceof ValidationError) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+      },
+      { status: error.status }
+    );
+  }
+
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        error: "Invalid request data",
+        code: "VALIDATION_ERROR",
+        details: error.flatten().fieldErrors,
+      },
+      { status: 400 }
+    );
+  }
+
   if (error instanceof UnauthorizedError) {
     return NextResponse.json({ error: error.message }, { status: 401 });
   }

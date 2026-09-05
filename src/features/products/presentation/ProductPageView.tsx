@@ -452,7 +452,7 @@ export const ProductPageView = ({ slug }: ProductPageViewProps) => {
             });
           }
 
-          // Track purchase event for Facebook and TikTok pixels + Meta Conversion API
+          // Track purchase event for configured client-side analytics pixels
           trackPurchase({
             value: selectedPromotion.totalPrice,
             currency: "DZD",

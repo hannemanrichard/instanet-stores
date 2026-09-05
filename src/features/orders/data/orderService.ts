@@ -22,8 +22,17 @@ type Tables = Database["public"]["Tables"];
 type OrderRow = Tables["orders"]["Row"];
 type OrderInsert = Tables["orders"]["Insert"];
 type OrderUpdate = Tables["orders"]["Update"];
+type ProductRow = Tables["products"]["Row"];
 type OrderItemRow = Tables["order_item"]["Row"] & {
   items?: Tables["items"]["Row"] | null;
+};
+type OrderMetricOrderRow = Pick<OrderRow, "id" | "created_at">;
+type OrderMetricItemRow = Pick<OrderItemRow, "order_id" | "qty"> & {
+  items?:
+    | (Tables["items"]["Row"] & {
+        products?: Pick<ProductRow, "supplier_price"> | null;
+      })
+    | null;
 };
 
 export class SupabaseOrderService implements OrderRepository {
@@ -410,11 +419,11 @@ export class SupabaseOrderService implements OrderRepository {
     storeIds?: number[]
   ): Promise<{ date: string; sales: number; orders: number }[]> {
     return withPerformanceTracking("OrderService", "getDailyMetrics", async () => {
-      const rows = await DatabaseWrapper.executeQuery(
+      const orders = await DatabaseWrapper.executeQuery(
         async () => {
           let query = supabase
             .from(this.tableName)
-            .select("created_at, product_price, product_qty")
+            .select("id, created_at")
             .gte("created_at", `${fromDate}T00:00:00`)
             .lte("created_at", `${toDate}T23:59:59.999`);
 
@@ -437,13 +446,61 @@ export class SupabaseOrderService implements OrderRepository {
 
       const metricsByDate = new Map<string, { sales: number; orders: number }>();
 
-      for (const row of rows) {
-        if (!row.created_at) continue;
-        const date = row.created_at.slice(0, 10);
+      for (const order of orders as OrderMetricOrderRow[]) {
+        if (!order.created_at) continue;
+        const date = order.created_at.slice(0, 10);
         const current = metricsByDate.get(date) ?? { sales: 0, orders: 0 };
         current.orders += 1;
-        current.sales += (row.product_price ?? 0) * (row.product_qty ?? 0);
         metricsByDate.set(date, current);
+      }
+
+      const orderIds = (orders as OrderMetricOrderRow[]).map((order) => order.id);
+
+      if (orderIds.length) {
+        const orderItems = await DatabaseWrapper.executeQuery(
+          async () => {
+            const { data, error } = await supabase
+              .from("order_item")
+              .select(
+                `
+                  order_id,
+                  qty,
+                  items (
+                    product_id,
+                    products (
+                      supplier_price
+                    )
+                  )
+                `
+              )
+              .in("order_id", orderIds);
+
+            if (error) throw error;
+            return { data, error };
+          },
+          {
+            operation: "getDailyMetricsItems",
+            table: "order_item",
+            metadata: { orderIds },
+          }
+        );
+
+        const orderDateById = new Map(
+          (orders as OrderMetricOrderRow[])
+            .filter((order) => Boolean(order.created_at))
+            .map((order) => [order.id, order.created_at!.slice(0, 10)])
+        );
+
+        for (const row of orderItems as OrderMetricItemRow[]) {
+          const date = orderDateById.get(row.order_id);
+          if (!date) continue;
+
+          const current = metricsByDate.get(date) ?? { sales: 0, orders: 0 };
+          const quantity = row.qty ?? 0;
+          const supplierPrice = row.items?.products?.supplier_price ?? 0;
+          current.sales += supplierPrice * quantity;
+          metricsByDate.set(date, current);
+        }
       }
 
       const days = eachDayOfInterval({

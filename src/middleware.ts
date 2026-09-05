@@ -8,6 +8,7 @@ import {
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
+  "/api/dashboard(.*)",
   "/api/store(.*)",
   "/api/stores(.*)",
   "/api/orders(.*)",
@@ -108,6 +109,7 @@ export const config = {
     "/sign-out(.*)",
     "/api/set-role(.*)",
     "/api/clerk(.*)",
+    "/api/dashboard(.*)",
     "/api/store(.*)",
     "/api/stores(.*)",
     "/api/orders(.*)",

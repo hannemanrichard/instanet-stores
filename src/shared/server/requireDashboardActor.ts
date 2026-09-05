@@ -1,8 +1,11 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/server";
 import { storeAssignmentApplicationService } from "@/features/stores/application/services/storeManagerApplicationService";
 import type { StoreEntity } from "@/features/stores/domain";
-import { requireCurrentStore, UnauthorizedError } from "./requireCurrentStore";
+import {
+  requireAuthenticatedUser,
+  requireCurrentStoreForUser,
+  UnauthorizedError,
+} from "./requireCurrentStore";
 import type { DashboardRoleName } from "./storeAccess";
 import { resolveUserEmail } from "@/shared/utils/userEmail";
 
@@ -26,15 +29,7 @@ const resolveRole = (user: User): string | undefined => {
  * Managers never resolve via requireCurrentStore.
  */
 export const requireDashboardActor = async (): Promise<DashboardActor> => {
-  const { userId } = await auth();
-  if (!userId) {
-    throw new UnauthorizedError();
-  }
-
-  const user = await currentUser();
-  if (!user) {
-    throw new UnauthorizedError();
-  }
+  const user = await requireAuthenticatedUser();
 
   const role = resolveRole(user);
 
@@ -50,7 +45,7 @@ export const requireDashboardActor = async (): Promise<DashboardActor> => {
     return { role: "stores_manager", user, store: null, storeIds };
   }
 
-  const store = await requireCurrentStore();
+  const store = await requireCurrentStoreForUser(user);
   return { role: "store", user, store, storeIds: [store.id] };
 };
 

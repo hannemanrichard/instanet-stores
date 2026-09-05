@@ -253,102 +253,7 @@ export const initMicrosoftClarity = (projectId: string) => {
 };
 
 /**
- * Get Facebook Pixel browser ID (fbp) from cookies
- */
-const getFbp = (): string | undefined => {
-  if (typeof document === "undefined") return undefined;
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split("=");
-    if (name === "_fbp") {
-      return value;
-    }
-  }
-  return undefined;
-};
-
-/**
- * Get Facebook Click ID (fbc) from cookies or URL parameters
- */
-const getFbc = (): string | undefined => {
-  if (typeof document === "undefined") return undefined;
-
-  // Check URL parameters first
-  const urlParams = new URLSearchParams(window.location.search);
-  const fbclid = urlParams.get("fbclid");
-  if (fbclid) {
-    // Format: fb.{timestamp}.{random}.{fbclid}
-    return `fb.${Date.now()}.${Math.random().toString(36).substring(2)}.${fbclid}`;
-  }
-
-  // Check cookies
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split("=");
-    if (name === "_fbc") {
-      return value;
-    }
-  }
-  return undefined;
-};
-
-/**
- * Track Purchase event via Meta Conversion API (server-side)
- */
-const trackMetaConversionPurchase = async (purchaseData: {
-  value: number;
-  currency: string;
-  content_name?: string;
-  content_ids?: string[];
-  num_items?: number;
-  userData?: {
-    em?: string[];
-    ph?: string[];
-    fn?: string[];
-    ln?: string[];
-    external_id?: string[];
-  };
-}) => {
-  try {
-    const fbp = getFbp();
-    const fbc = getFbc();
-
-    const response = await fetch("/api/meta-conversion", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        eventType: "Purchase",
-        eventData: {
-          value: purchaseData.value,
-          currency: purchaseData.currency,
-          content_name: purchaseData.content_name,
-          content_ids: purchaseData.content_ids,
-          num_items: purchaseData.num_items,
-          userData: {
-            ...purchaseData.userData,
-            fbp: fbp,
-            fbc: fbc,
-          },
-          eventId: `purchase_${Date.now()}_${Math.random().toString(36).substring(2)}`,
-          eventSourceUrl:
-            typeof window !== "undefined" ? window.location.href : undefined,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      console.warn("Failed to track purchase via Meta Conversion API");
-    }
-  } catch (error) {
-    // Silently fail - don't block the purchase flow
-    console.warn("Error tracking purchase via Meta Conversion API:", error);
-  }
-};
-
-/**
- * Track Purchase event for both pixels and Meta Conversion API
+ * Track Purchase event for configured client-side analytics pixels
  */
 export const trackPurchase = async (purchaseData: {
   value: number;
@@ -396,9 +301,4 @@ export const trackPurchase = async (purchaseData: {
       })),
     });
   }
-
-  // Meta Conversion API (server-side) - fire and forget
-  trackMetaConversionPurchase(purchaseData).catch(() => {
-    // Already handled in the function
-  });
 };

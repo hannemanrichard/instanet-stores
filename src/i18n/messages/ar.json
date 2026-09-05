@@ -785,15 +785,13 @@
         "facebook_pixel_id": "معرّف Facebook Pixel",
         "tiktok_pixel_id": "معرّف(ات) TikTok Pixel",
         "google_analytics_id": "معرّف Google Analytics",
-        "microsoft_clarity_id": "معرّف Microsoft Clarity",
-        "meta_conversion_api_access_token": "رمز وصول Meta Conversion API"
+        "microsoft_clarity_id": "معرّف Microsoft Clarity"
       },
       "placeholders": {
         "facebook_pixel_id": "أدخل معرّف Facebook Pixel",
         "tiktok_pixel_id": "معرّف واحد أو أكثر مفصولة بفواصل (مثال ABC123, DEF456)",
         "google_analytics_id": "أدخل معرّف Google Analytics (GA4)",
-        "microsoft_clarity_id": "أدخل معرّف مشروع Microsoft Clarity",
-        "meta_conversion_api_access_token": "أدخل رمز وصول Meta Conversion API"
+        "microsoft_clarity_id": "أدخل معرّف مشروع Microsoft Clarity"
       }
     },
     "productPages": {
